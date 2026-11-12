@@ -1,0 +1,8 @@
+node_modules/
+dist/
+
+# The database is created automatically on first run, so it is not committed.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
