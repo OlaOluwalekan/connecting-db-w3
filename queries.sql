@@ -1,5 +1,5 @@
 -- Stage 4: first SQL queries, run by hand against tasks.db
--- (e.g. in DB Browser for SQLite → "Execute SQL" tab).
+-- (e.g. in DBeaver's SQL editor, with auto-commit on).
 -- The API reads straight from the database, so GET /tasks reflects
 -- every change made here immediately — no server restart needed.
 
