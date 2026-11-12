@@ -1,5 +1,5 @@
 import type Database from "better-sqlite3";
-import type { NewTask } from "./validation";
+import type { NewTask, TaskUpdate } from "./validation";
 
 /** A task as the API sends it to clients. */
 export interface Task {
@@ -32,7 +32,31 @@ export class TaskRepository {
       insert: db.prepare<[{ title: string; done: number }], TaskRow>(
         "INSERT INTO tasks (title, done) VALUES (@title, @done) RETURNING id, title, done",
       ),
+      // COALESCE keeps the current value for any field the client didn't send.
+      update: db.prepare<[{ id: number; title: string | null; done: number | null }], TaskRow>(
+        `UPDATE tasks
+            SET title = COALESCE(@title, title),
+                done  = COALESCE(@done, done)
+          WHERE id = @id
+      RETURNING id, title, done`,
+      ),
+      delete: db.prepare<[number]>("DELETE FROM tasks WHERE id = ?"),
     };
+  }
+
+  /** Returns the updated task, or undefined if no task has that id. */
+  update(id: number, changes: TaskUpdate): Task | undefined {
+    const row = this.stmts.update.get({
+      id,
+      title: changes.title ?? null,
+      done: changes.done === undefined ? null : changes.done ? 1 : 0,
+    });
+    return row && toTask(row);
+  }
+
+  /** Returns true if a task was deleted, false if no task has that id. */
+  delete(id: number): boolean {
+    return this.stmts.delete.run(id).changes > 0;
   }
 
   create(task: NewTask): Task {

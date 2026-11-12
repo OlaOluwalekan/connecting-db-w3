@@ -21,3 +21,22 @@ export function validateNewTask(body: unknown): Result<NewTask> {
   }
   return { ok: true, value: { title: title.trim(), done: done ?? false } };
 }
+
+export type TaskUpdate = Partial<NewTask>;
+
+/** PUT /tasks/:id body: title and/or done; at least one must be present. */
+export function validateTaskUpdate(body: unknown): Result<TaskUpdate> {
+  if (!isPlainObject(body)) return { ok: false, error: "Request body must be a JSON object" };
+
+  const { title, done } = body;
+  if (title === undefined && done === undefined) {
+    return { ok: false, error: "Provide at least one of: title, done" };
+  }
+  if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
+    return { ok: false, error: "title must be a non-empty string" };
+  }
+  if (done !== undefined && typeof done !== "boolean") {
+    return { ok: false, error: "done must be a boolean" };
+  }
+  return { ok: true, value: { title: title?.trim(), done } };
+}

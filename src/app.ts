@@ -1,7 +1,7 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import type Database from "better-sqlite3";
 import { TaskRepository } from "./taskRepository";
-import { validateNewTask } from "./validation";
+import { validateNewTask, validateTaskUpdate } from "./validation";
 
 const NOT_FOUND = { error: "Task not found" };
 
@@ -36,6 +36,24 @@ export function createApp(db: Database.Database) {
     const result = validateNewTask(req.body);
     if (!result.ok) return res.status(400).json({ error: result.error });
     res.status(201).json(tasks.create(result.value));
+  });
+
+  // PUT /tasks/:id — update title and/or done; 404 for unknown ids, 400 for bad bodies
+  app.put("/tasks/:id", (req: Request, res: Response) => {
+    const id = parseId(req);
+    if (id === undefined) return res.status(404).json(NOT_FOUND);
+    const result = validateTaskUpdate(req.body);
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    const task = tasks.update(id, result.value);
+    if (!task) return res.status(404).json(NOT_FOUND);
+    res.json(task);
+  });
+
+  // DELETE /tasks/:id — 204 on success, 404 for unknown ids
+  app.delete("/tasks/:id", (req: Request, res: Response) => {
+    const id = parseId(req);
+    if (id === undefined || !tasks.delete(id)) return res.status(404).json(NOT_FOUND);
+    res.status(204).end();
   });
 
   // Malformed JSON bodies → 400; anything else unexpected → 500. Always JSON.
