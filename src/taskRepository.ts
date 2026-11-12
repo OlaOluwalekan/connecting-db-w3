@@ -1,4 +1,5 @@
 import type Database from "better-sqlite3";
+import type { NewTask } from "./validation";
 
 /** A task as the API sends it to clients. */
 export interface Task {
@@ -28,7 +29,15 @@ export class TaskRepository {
     this.stmts = {
       findAll: db.prepare<[], TaskRow>("SELECT id, title, done FROM tasks ORDER BY id"),
       findById: db.prepare<[number], TaskRow>("SELECT id, title, done FROM tasks WHERE id = ?"),
+      insert: db.prepare<[{ title: string; done: number }], TaskRow>(
+        "INSERT INTO tasks (title, done) VALUES (@title, @done) RETURNING id, title, done",
+      ),
     };
+  }
+
+  create(task: NewTask): Task {
+    const row = this.stmts.insert.get({ title: task.title, done: task.done ? 1 : 0 })!;
+    return toTask(row);
   }
 
   findAll(): Task[] {

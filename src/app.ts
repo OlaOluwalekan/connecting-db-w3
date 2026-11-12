@@ -1,6 +1,7 @@
-import express, { type Request, type Response } from "express";
+import express, { type NextFunction, type Request, type Response } from "express";
 import type Database from "better-sqlite3";
 import { TaskRepository } from "./taskRepository";
+import { validateNewTask } from "./validation";
 
 const NOT_FOUND = { error: "Task not found" };
 
@@ -28,6 +29,22 @@ export function createApp(db: Database.Database) {
     const task = id === undefined ? undefined : tasks.findById(id);
     if (!task) return res.status(404).json(NOT_FOUND);
     res.json(task);
+  });
+
+  // POST /tasks — create a task, 201 with the new row, or 400
+  app.post("/tasks", (req: Request, res: Response) => {
+    const result = validateNewTask(req.body);
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    res.status(201).json(tasks.create(result.value));
+  });
+
+  // Malformed JSON bodies → 400; anything else unexpected → 500. Always JSON.
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof SyntaxError && "body" in err) {
+      return res.status(400).json({ error: "Request body is not valid JSON" });
+    }
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
   });
 
   return app;
