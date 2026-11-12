@@ -17,7 +17,7 @@ Now:     Client -> API -> SQLite database (tasks.db)
 Requirements: **Node.js 20 or newer** and npm.
 
 ```bash
-git clone <this-repo-url>
+git clone https://github.com/OlaOluwalekan/connecting-db-w3.git
 cd connecting-db-w3
 npm install
 npm run dev
@@ -34,11 +34,11 @@ On first start, the app:
 
 You don't have to set anything up by hand.
 
-| Script | What it does |
-|---|---|
-| `npm run dev` | Start with auto-reload (tsx) |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npm start` | Run the compiled build |
+| Script              | What it does                         |
+| ------------------- | ------------------------------------ |
+| `npm run dev`       | Start with auto-reload (tsx)         |
+| `npm run build`     | Compile TypeScript to `dist/`        |
+| `npm start`         | Run the compiled build               |
 | `npm run typecheck` | Type-check without writing any files |
 
 ## Why SQLite?
@@ -74,13 +74,13 @@ into `true` or `false` in JSON responses.
 
 ## API
 
-| Method | Path | Body | Success | Errors |
-|---|---|---|---|---|
-| `GET` | `/tasks` | none | `200` with an array of tasks | none |
-| `GET` | `/tasks/:id` | none | `200` with the task | `404` |
-| `POST` | `/tasks` | `{ "title": string, "done"?: boolean }` | `201` with the created task | `400` |
-| `PUT` | `/tasks/:id` | `{ "title"?: string, "done"?: boolean }`, at least one field | `200` with the updated task | `400`, `404` |
-| `DELETE` | `/tasks/:id` | none | `204`, no content | `404` |
+| Method   | Path         | Body                                                         | Success                      | Errors       |
+| -------- | ------------ | ------------------------------------------------------------ | ---------------------------- | ------------ |
+| `GET`    | `/tasks`     | none                                                         | `200` with an array of tasks | none         |
+| `GET`    | `/tasks/:id` | none                                                         | `200` with the task          | `404`        |
+| `POST`   | `/tasks`     | `{ "title": string, "done"?: boolean }`                      | `201` with the created task  | `400`        |
+| `PUT`    | `/tasks/:id` | `{ "title"?: string, "done"?: boolean }`, at least one field | `200` with the updated task  | `400`, `404` |
+| `DELETE` | `/tasks/:id` | none                                                         | `204`, no content            | `404`        |
 
 An unknown id returns `404 { "error": "Task not found" }`. An invalid body (missing or
 empty title, a `done` that isn't a boolean, or malformed JSON) returns `400` with an
